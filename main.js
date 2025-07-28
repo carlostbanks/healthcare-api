@@ -3,7 +3,7 @@ const BASE_URL = 'https://assessment.ksensetech.com/api';
 const LIMIT = 5;
 
 function fetchPatients(page = 1, retries = 5) {
-  const delay = Math.min(2000 * Math.pow(1.5, 5 - retries), 10000);
+  const delay = Math.min(3000 * Math.pow(1.5, 5 - retries), 15000);
   
   return fetch(`${BASE_URL}/patients?page=${page}&limit=${LIMIT}`, {
     headers: {
