@@ -1,8 +1,5 @@
 # Healthcare API Assessment
 
-**Developer:** Carlos Banks 
-**Project:** Healthcare API Risk Scoring System
-
 ## What it does
 - Fetches patient data from API with retry logic for rate limiting
 - Calculates risk scores based on blood pressure, temperature, and age  
