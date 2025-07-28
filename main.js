@@ -3,7 +3,7 @@ const BASE_URL = 'https://assessment.ksensetech.com/api';
 const LIMIT = 5;
 
 function fetchPatients(page = 1, retries = 5) {
-  const delay = Math.min(2000 * Math.pow(1.5, 5 - retries), 10000); // Longer delays with exponential backoff
+  const delay = Math.min(2000 * Math.pow(1.5, 5 - retries), 10000);
   
   return fetch(`${BASE_URL}/patients?page=${page}&limit=${LIMIT}`, {
     headers: {
@@ -49,7 +49,7 @@ async function getAllPatients() {
         await new Promise(resolve => setTimeout(resolve, 500));
       }
     } catch (err) {
-      console.error(`❌ Failed to get page ${page}:`, err.message);
+      console.error(`Failed to get page ${page}:`, err.message);
       break;
     }
   }
@@ -143,18 +143,18 @@ function processPatients(patients) {
     const ageRisk = calculateAgeRisk(patient.age);
     const totalRisk = bpRisk + tempRisk + ageRisk;
     
-    console.log(`  BP Risk: ${bpRisk}, Temp Risk: ${tempRisk}, Age Risk: ${ageRisk}, Total: ${totalRisk}`);
+    console.log(`BP Risk: ${bpRisk}, Temp Risk: ${tempRisk}, Age Risk: ${ageRisk}, Total: ${totalRisk}`);
     
     // Check high risk (total >= 4)
     if (totalRisk >= 4) {
       highRiskPatients.push(patient.patient_id);
-      console.log(`  High risk patient identified`);
+      console.log(`High risk patient identified`);
     }
     
     // Check fever (temp >= 99.6)
     if (typeof patient.temperature === 'number' && patient.temperature >= 99.6) {
       feverPatients.push(patient.patient_id);
-      console.log(`  Fever patient identified`);
+      console.log(`Fever patient identified`);
     }
   });
   
@@ -165,16 +165,49 @@ function processPatients(patients) {
   };
 }
 
+async function submitAssessment(results) {
+  try {
+    console.log('Submitting assessment results...');
+    console.log('Submitting:', results);
+    
+    const response = await fetch(`${BASE_URL}/submit-assessment`, {
+      method: 'POST',
+      headers: {
+        'x-api-key': API_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(results),
+    });
 
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    console.log('Full API Response:', data);
+    console.log('Assessment submitted successfully!');
+    
+    if (data.results?.feedback) {
+      console.log('Strengths:', data.results.feedback.strengths);
+      console.log('Issues to fix:', data.results.feedback.issues);
+    }
+    
+    return data;
+  } catch (err) {
+    console.error('Failed to submit assessment:', err.message);
+    throw err;
+  }
+}
 
 async function run() {
   try {
     console.log('Starting patient data collection...');
     const patients = await getAllPatients();
-    console.log(`✅ Collected ${patients.length} patients`);
+    console.log(`Collected ${patients.length} patients`);
     
     if (patients.length === 0) {
-      console.error('❌ No patients retrieved!');
+      console.error('No patients retrieved!');
       document.getElementById('output').textContent = 'Error: No patients retrieved';
       return;
     }
@@ -182,18 +215,18 @@ async function run() {
     console.log('Processing patients for risk assessment...');
     const results = processPatients(patients);
     
-    console.log('✅ Risk Assessment Results:', results);
+    console.log('Risk Assessment Results:', results);
     console.log('High Risk Count:', results.high_risk_patients.length);
     console.log('Fever Count:', results.fever_patients.length); 
     console.log('Data Quality Issues Count:', results.data_quality_issues.length);
     
     document.getElementById('output').textContent = JSON.stringify(results, null, 2);
     
-    // Results ready for manual review and submission when ready
-    console.log('🚨 RESULTS READY - Review these carefully before submitting!');
+    console.log('AUTO-SUBMITTING RESULTS...');
+    await submitAssessment(results);
     
   } catch (err) {
-    console.error('❌ Error in run():', err.message);
+    console.error('Error in run():', err.message);
     document.getElementById('output').textContent = `Error: ${err.message}`;
   }
 }
