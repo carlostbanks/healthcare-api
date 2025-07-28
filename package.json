@@ -1,0 +1,23 @@
+{
+  "name": "healthcare-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carlostbanks/healthcare-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/carlostbanks/healthcare-api/issues"
+  },
+  "homepage": "https://github.com/carlostbanks/healthcare-api#readme",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}
